@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  auravision:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: auravision_app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./backend/models/image_quality.db
+      - CLASSICAL_MODEL_PATH=backend/models/classical_rf.joblib
+      - CNN_MODEL_PATH=backend/models/cnn_model.pth
+    volumes:
+      # Persistent storage for uploads, database and weights
+      - auravision_uploads:/app/static/uploads
+      - auravision_heatmaps:/app/static/heatmaps
+      - auravision_models:/app/backend/models
+    restart: unless-stopped
+    healthcheck:
+      # Use inline python to perform healthchecks so we don't rely on curl/wget on slim distros
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s # Large start period to accommodate first-run synthetic training phase
+
+volumes:
+  auravision_uploads:
+  auravision_heatmaps:
+  auravision_models:

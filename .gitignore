@@ -1,0 +1,9 @@
+venv/
+test_env/
+__pycache__/
+*.pyc
+image_quality.db
+static/uploads/*
+static/heatmaps/*
+data_synthetic/
+.env

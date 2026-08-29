@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Image Quality & Defect Detector</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- Header -->
+        <header class="app-header">
+            <div class="brand">
+                <i class="fa-solid fa-wand-magic-sparkles logo-icon"></i>
+                <div>
+                    <h1>AuraVision</h1>
+                    <p class="tagline">AI Image Quality & Defect Detection</p>
+                </div>
+            </div>
+            <div class="system-status" id="systemStatus">
+                <span class="status-indicator online"></span>
+                <span class="status-text">Backend Connecting...</span>
+            </div>
+        </header>
+
+        <div class="dashboard-layout">
+            
+            <!-- Main Content Area -->
+            <main class="main-content">
+                
+                <!-- Upload Section -->
+                <section class="card upload-section" id="uploadCard">
+                    <div class="drop-zone" id="dropZone">
+                        <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                        <h3>Drag & drop your image here</h3>
+                        <p>Supports PNG, JPEG, JPG, WebP up to 10MB</p>
+                        <div class="or-divider">
+                            <span>OR</span>
+                        </div>
+                        <label for="fileInput" class="btn btn-primary">Browse Files</label>
+                        <input type="file" id="fileInput" accept="image/png, image/jpeg, image/jpg, image/webp" style="display: none;">
+                    </div>
+                    <div class="uploading-state hidden" id="uploadProgress">
+                        <div class="spinner"></div>
+                        <p>Uploading and analyzing image...</p>
+                    </div>
+                </section>
+
+                <!-- Analysis Results Section -->
+                <section class="results-grid hidden" id="resultsSection">
+                    
+                    <!-- Card 1: Score & Label -->
+                    <div class="card score-card">
+                        <h2>Overall Assessment</h2>
+                        <div class="score-container">
+                            <div class="circular-progress" id="scoreProgress">
+                                <span class="score-value" id="scoreValue">0</span>
+                                <span class="score-label">score</span>
+                            </div>
+                            <div class="assessment-badge" id="assessmentBadge">
+                                ACCEPTABLE
+                            </div>
+                            <p class="assessment-desc" id="assessmentDesc">
+                                The image meets visual standards with no quality issues detected.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Interactive Viewer (Original vs Grad-CAM) -->
+                    <div class="card viewer-card">
+                        <div class="viewer-header">
+                            <h2>Visual Analysis</h2>
+                            <div class="viewer-tabs">
+                                <button class="tab-btn active" id="btnOriginal">Original</button>
+                                <button class="tab-btn" id="btnHeatmap">Grad-CAM Heatmap</button>
+                            </div>
+                        </div>
+                        <div class="image-display-container">
+                            <img id="displayOriginal" src="" alt="Original upload" class="display-image">
+                            <img id="displayHeatmap" src="" alt="Grad-CAM activation overlay" class="display-image hidden">
+                            <div class="heatmap-info hidden" id="heatmapInfo">
+                                <i class="fa-solid fa-circle-info"></i> Heatmap highlights regions directing the CNN's classification.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Detected Issues Checklist -->
+                    <div class="card issues-card">
+                        <h2>Detected Quality Issues</h2>
+                        <div class="issues-list" id="issuesList">
+                            <!-- Populated dynamically -->
+                            <div class="empty-issues">
+                                <i class="fa-solid fa-circle-check text-success"></i>
+                                <p>No issues detected! Perfect image quality.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Quantitative Statistics -->
+                    <div class="card stats-card">
+                        <h2>Image Quality Statistics</h2>
+                        <div class="stats-grid" id="statsGrid">
+                            
+                            <div class="stat-item">
+                                <div class="stat-label">
+                                    <span>Sharpness (Laplacian Var)</span>
+                                    <span id="statSharpness">0.0</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="barSharpness" style="width: 0%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="stat-item">
+                                <div class="stat-label">
+                                    <span>Mean Brightness</span>
+                                    <span id="statBrightness">0.0</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="barBrightness" style="width: 0%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="stat-item">
+                                <div class="stat-label">
+                                    <span>RMS Contrast</span>
+                                    <span id="statContrast">0.0</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="barContrast" style="width: 0%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="stat-item">
+                                <div class="stat-label">
+                                    <span>Noise Severity (Std)</span>
+                                    <span id="statNoise">0.0</span>
+                                </div>
+                                <div class="progress-bar bg-danger">
+                                    <div class="progress-fill" id="barNoise" style="width: 0%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="stat-item">
+                                <div class="stat-label">
+                                    <span>FFT High-Freq Ratio</span>
+                                    <span id="statFFT">0.0%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="barFFT" style="width: 0%;"></div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </section>
+                
+            </main>
+
+            <!-- Sidebar: Analysis History -->
+            <aside class="sidebar card">
+                <div class="sidebar-header">
+                    <h2><i class="fa-solid fa-history"></i> Analysis History</h2>
+                    <button class="btn-icon" id="btnRefreshHistory" title="Refresh history">
+                        <i class="fa-solid fa-sync"></i>
+                    </button>
+                </div>
+                <div class="history-list" id="historyList">
+                    <!-- History items will be loaded dynamically -->
+                    <div class="history-empty">
+                        <i class="fa-solid fa-folder-open"></i>
+                        <p>No previous uploads found.</p>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+    </div>
+
+    <!-- Error/Notification Toast -->
+    <div id="toast" class="toast hidden">
+        <i class="fa-solid fa-triangle-exclamation toast-icon"></i>
+        <span id="toastMsg">Error message goes here</span>
+    </div>
+
+    <!-- Script loading -->
+    <script src="app.js"></script>
+</body>
+</html>
