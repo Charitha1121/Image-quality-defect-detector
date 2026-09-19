@@ -1,0 +1,32 @@
+# Keep only deployment-relevant files for Vercel serverless builds
+.venv/
+venv/
+test_env/
+.git/
+.gitignore
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.db
+*.sqlite3
+*.sqlite
+*.ipynb
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+coverage/
+htmlcov/
+.DS_Store
+
+data_synthetic/
+
+docker-compose.yml
+Dockerfile
+entrypoint.sh
+README.md
+evaluation_report.md
+
+# Keep the runtime model and app directories needed by the API
+# (do not ignore backend/, backend/models/, static/, or frontend/)
