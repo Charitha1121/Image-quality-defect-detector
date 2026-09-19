@@ -1,6 +1,7 @@
 import os
 import uuid
 import shutil
+from pathlib import Path
 from fastapi import FastAPI, Depends, File, UploadFile, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -40,10 +41,10 @@ app.add_middleware(
 )
 
 # Mount media upload folders
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-os.makedirs(HEATMAP_DIR, exist_ok=True)
-app.mount("/static/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
-app.mount("/static/heatmaps", StaticFiles(directory=HEATMAP_DIR), name="heatmaps")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+HEATMAP_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/static/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
+app.mount("/static/heatmaps", StaticFiles(directory=str(HEATMAP_DIR)), name="heatmaps")
 
 # Helper to check if file type is allowed
 ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/jpg", "image/webp"}
@@ -215,8 +216,8 @@ def get_result_by_id(result_id: int, db: Session = Depends(get_db)):
 
 # Mount frontend files at the root route AFTER API routes are defined
 # This ensures API endpoints are correctly intercepted and frontend handles other routes.
-FRONTEND_DIR = "frontend"
-if os.path.exists(FRONTEND_DIR):
-    app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
+if FRONTEND_DIR.exists():
+    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
 else:
     print(f"Warning: Frontend folder '{FRONTEND_DIR}' does not exist yet. Root path won't serve HTML.")

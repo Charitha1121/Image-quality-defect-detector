@@ -1,4 +1,6 @@
 import os
+from pathlib import Path
+
 import cv2
 import numpy as np
 import torch
@@ -7,20 +9,22 @@ from backend.app.models import AnalysisResult
 from ml.features import extract_features
 from ml.deep_learning import QualityCNN, GradCAM, overlay_heatmap_on_image, device
 
-# Paths to serialized models
-CLASSICAL_MODEL_PATH = os.getenv("CLASSICAL_MODEL_PATH", "backend/models/classical_rf.joblib")
-CNN_MODEL_PATH = os.getenv("CNN_MODEL_PATH", "backend/models/cnn_model.pth")
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+# Paths to serialized models; support environment overrides while defaulting to repo-relative paths.
+CLASSICAL_MODEL_PATH = Path(os.getenv("CLASSICAL_MODEL_PATH", str(REPO_ROOT / "backend" / "models" / "classical_rf.joblib"))).resolve()
+CNN_MODEL_PATH = Path(os.getenv("CNN_MODEL_PATH", str(REPO_ROOT / "backend" / "models" / "cnn_model.pth"))).resolve()
 
 # Global variables for models
 classical_model_data = None
 cnn_model = None
 grad_cam_generator = None
 
-# Create folders for uploads and heatmaps
-UPLOAD_DIR = "static/uploads"
-HEATMAP_DIR = "static/heatmaps"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-os.makedirs(HEATMAP_DIR, exist_ok=True)
+# Create folders for uploads and heatmaps. These default to repo-local writable paths with env overrides.
+UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", str(REPO_ROOT / "static" / "uploads"))).resolve()
+HEATMAP_DIR = Path(os.getenv("HEATMAP_DIR", str(REPO_ROOT / "static" / "heatmaps"))).resolve()
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+HEATMAP_DIR.mkdir(parents=True, exist_ok=True)
 
 def load_models():
     """
